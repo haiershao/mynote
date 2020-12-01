@@ -1,1 +1,7 @@
-mynote![微信图片_20201201185006](D:\Typora_files\work_note\mynote\README.assets\微信图片_20201201185006.jpg)
+# mynote
+
+
+
+
+
+![](README.assets/微信图片_20201201185006.jpg)
