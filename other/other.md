@@ -2,7 +2,7 @@
 
 1.git阿里镜像地址：http://npm.taobao.org/mirrors/git-for-windows
 
-2.
+2.spark工具包https://spark-packages.org/
 
 # demo
 
