@@ -4,6 +4,8 @@
 
 2.spark工具包https://spark-packages.org/
 
+3.findjar.com
+
 # demo
 
 1.写个定时任务（shell,crontab）
@@ -66,3 +68,56 @@ done
 实现方式1：通过sqoop导入到hive
 
 实现方式2：通过spark程序
+
+
+
+3.java打包依赖
+
+```xml
+<build>
+  <plugins>
+   <plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>2.3.2</version>
+    <configuration>
+     <source>1.8</source>
+     <target>1.8</target>
+    </configuration>
+   </plugin>
+   <plugin>
+    <artifactId>maven-assembly-plugin </artifactId>
+    <configuration>
+     <descriptorRefs>
+      <descriptorRef>jar-with-dependencies</descriptorRef>
+     </descriptorRefs>
+     <archive>
+      <manifest>
+       <mainClass>com.bigdata.mr.WordcountDriver</mainClass>
+      </manifest>
+     </archive>
+    </configuration>
+    <executions>
+     <execution>
+      <id>make-assembly</id>
+      <phase>package</phase>
+      <goals>
+       <goal>single</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+  </plugins>
+ </build>
+```
+
+# 异常
+
+```xml
+1.object is not a member of package
+重装idea
+卸载idea时勾选对选框，清除idea缓存
+2.could not find implicit value for evidence parameter of type org.apache.flink.api.common..
+解决办法：import org.apache.flink.streaming.api.scala._
+将artifactId中例如flink-scala_2.11下划线后的版本号与当前配置的scala的版本号保持一致
+```
+
