@@ -119,5 +119,35 @@ done
 2.could not find implicit value for evidence parameter of type org.apache.flink.api.common..
 解决办法：import org.apache.flink.streaming.api.scala._
 将artifactId中例如flink-scala_2.11下划线后的版本号与当前配置的scala的版本号保持一致
+3.FlinkKafkaConsumer011包倒不进，需要在pom中添加flink-connector-kafka-0.11_2.11小版本号
+4.对于scala来说，一般jar包冲突是artifactId中对应的scala版本与idea版本不一致问题
+4.java.lang.NoClassDefFoundError: Could not initialize class com.ziyun.historystatus.util.MysqlUtil$
+驱动加载有问题、connection为空
+5.打jar包问题 一直不是最新的jar说明idea需要开启自动编译
+6.java.sql.SQLException: Can not call getNString() when field's charset isn't UTF-8 
+解决方案：也可能是传进去的sql中的参数数据类型问题
+7.import lombok.Getter;
+import lombok.Setter;
+idea需要安装lombok插件
 ```
 
+# 如何添加文件右键用idea打开！
+
+```xml
+1. 打开注册表
+　　win+R键输入regedit
+2. 找到  【计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Directory\shell】路径
+
+　　　　　　找不到的，可以直接复制改路径定位
+ 新建项（K）IDEA，然后选中添加字符串值
+在IDEA下面新增项command， 修改默认值为 "安装路径" "%1"
+3. 重启后看效果！！
+```
+
+![img](https://img2018.cnblogs.com/blog/1351763/201910/1351763-20191030090930480-1588166556.png)
+
+![img](https://img2018.cnblogs.com/blog/1351763/201910/1351763-20191030090910790-1003217356.png)
+
+![img](https://img2018.cnblogs.com/blog/1351763/201910/1351763-20191030091334888-991713327.png)
+
+![img](https://img2018.cnblogs.com/blog/1351763/201910/1351763-20191030091834538-828869319.png)

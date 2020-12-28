@@ -171,3 +171,9 @@ pom文件里面添加：
 ```
 
 ![image-20201218174034522](flink.assets/image-20201218174034522.png)
+
+```xml
+命令
+bin/kafka-console-consumer.sh --bootstrap-server 10.170.6.170:9092,10.170.6.171:9092,10.170.6.172:9092 --topic pip_executor_to_druid --property auto.offset.reset=latest --property group.id=test_1
+```
+
