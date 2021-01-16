@@ -23,3 +23,10 @@ hive.exec.max.dynamic.partitions=1000;
 hive.exec.max.created.files=10000;
 ```
 
+二、
+
+```xml
+1.beeline 连接不了
+首先查看metastore服务是否已启动
+```
+
