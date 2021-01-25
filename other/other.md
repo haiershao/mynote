@@ -6,6 +6,8 @@
 
 3.findjar.com
 
+4.学习资源网站 https://www.zhihu.com/column/c_1252698235820523520
+
 # demo
 
 1.写个定时任务（shell,crontab）
@@ -151,3 +153,35 @@ idea需要安装lombok插件
 ![img](other.assets/1351763-20191030091334888-991713327.png)
 
 ![img](other.assets/1351763-20191030091834538-828869319.png)
+
+
+
+sql查找重复数据
+
+```xml
+Select start_time,end_time From lh_history_status_info_test_46 where device_id = '16057' group by start_time,end_time having count (*)>1
+```
+
+# 常用命令
+
+```xml
+1.yarn
+yarn logs -applicationId
+yarn application -kill 
+2.spark提交
+./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name OperationRateCal_Test --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/spark_history_offline.conf --class com.ziyun.operationrate.start.OperationRateCal /home/ubuntu/spark_job/project/new_project/operation_rate-1.0-SNAPSHOT.jar
+3.flink提交
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_15min_140 /home/ubuntu/flink_job/project/new_history_status/flinkkafkatohistorystatuscal-1.0-SNAPSHOT-jar-with-dependencies.jar
+4.shell命令
+ssh登录这些节点
+
+ps -ef|grep kafka
+查看磁盘空间
+df -Th
+查看文件大小
+du -sh 111.log
+显示文本号
+:set nu
+```
+
+![image-20210125182635911](other.assets/image-20210125182635911.png)
