@@ -174,7 +174,7 @@ yarn application -kill
 bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_15min_140 /home/ubuntu/flink_job/project/new_history_status/flinkkafkatohistorystatuscal-1.0-SNAPSHOT-jar-with-dependencies.jar
 4.shell命令
 ssh登录这些节点
-
+5.查看端口号占用 netstat -anp|grep 8118
 ps -ef|grep kafka
 查看磁盘空间
 df -Th
