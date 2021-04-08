@@ -131,6 +131,7 @@ done
 7.import lombok.Getter;
 import lombok.Setter;
 idea需要安装lombok插件
+8.maven pom中添加这个标签，不被打jar包中<scope>provided</scope>
 ```
 
 # 如何添加文件右键用idea打开！

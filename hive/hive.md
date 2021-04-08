@@ -30,3 +30,13 @@ hive.exec.max.created.files=10000;
 首先查看metastore服务是否已启动
 ```
 
+```xml
+2.hive创表时指定编码格式和字符集
+指定SerDe和字符集。
+
+CREATE EXTERNAL TABLE student8(id STRING, name STRING) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES("field.delim"=',',"serialization.encoding"='GBK')
+LOCATION '/data/student8/';
+```
+
