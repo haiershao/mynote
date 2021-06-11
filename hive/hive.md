@@ -38,5 +38,7 @@ CREATE EXTERNAL TABLE student8(id STRING, name STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 WITH SERDEPROPERTIES("field.delim"=',',"serialization.encoding"='GBK')
 LOCATION '/data/student8/';
+
+https://blog.csdn.net/xiaowenk/article/details/54093732
 ```
 

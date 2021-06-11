@@ -1,0 +1,1130 @@
+ziyun笔记
+命令
+tail -200f flink_job.log
+
+## jar包配置大hdfs上 通过--properties-file 配置加载jar
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten_qa --conf spark.executor.memoryOverhead=1g --properties-file
+
+
+
+
+
+
+
+
+
+发布
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/state_info_base/flink_history_status_info_base-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm flink_history_status_info_base_20210604 --class com.ziyun.flink.start.RunCalculate /home/ubuntu/flink_job/project/test/state_info_base/flink_history_status_info_base-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+./bin/kafka-console-consumer.sh --bootstrap-server 10.20.10.107:9092,10.20.11.50:9092,10.20.10.247:9092 --topic machine_scheduling --property auto.offset.reset=earliest --property group.id=test_1_xx >> 111.log
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/flink_history_status_info_base-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm flink_history_status_info_base_20210524 --class com.ziyun.flink.start.RunCalculate /home/ubuntu/flink_job/project/test/flink_history_status_info_base-1.0-SNAPSHOT-jar-with-dependencies.jar
+qa
+./bin/flink run -m yarn-cluster -yjm 1024 -ytm 1024 -ynm flink_history_status_info_base_qa --class com.ziyun.flink.start.RunCalculate /root/flink_job/project/lh_base_table/flink_history_status_info_base-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+产量
+aws
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/yield_flink_base/flink_yield_base-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+./bin/flink run -m yarn-cluster -yjm 1024 -ytm 1024 -ynm flink_yield_iot_base_20210604 --class com.ziyun.flink.start.RunCalculate /home/ubuntu/flink_job/project/test/yield_flink_base/flink_yield_base-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+
+
+aws曾珠实时
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm test_realtime_domain --class com.ziyun.flink.FlinkMain /home/zengzhu/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id, dev_template_unique_id, CurProgramNo, data_col_time, FinishPartsNum from realtime_computation_5f46ae60484549b89cc79fb05429b437 where FinishPartsNum >= 0" test_realtime_domain_a3d36ac2d114466e8cd3bc75c3fa3c1d
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ./realtimeCal-1.0-SNAPSHOT.jar  zengzhu@ziyunbd07:/home/zengzhu/flink_job/project/realtimeCal
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/sparksql-1.0-SNAPSHOT.jar ./
+
+
+
+
+
+
+
+ ./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm test_realtime_domain --class com.ziyun.flink.FlinkMain /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id, dev_template_unique_id, CurProgramNo, data_col_time, FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" test_realtime_domain_a3d36ac2d114466e8cd3bc75c3fa3c1d
+ 
+ scp -i /home/ubuntu/ZiYun-JumpServer.pem ./realtimeCal-1.0-SNAPSHOT.jar  zengzhu@ziyunbd07:/home/zengzhu/flink_job/project/realtimeCal
+ 
+ ./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm test_realtime_domain --class com.ziyun.flink.FlinkMain /home/zengzhu/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id, dev_template_unique_id, CurProgramNo, data_col_time, FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" test_realtime_domain_a3d36ac2d114466e8cd3bc75c3fa3c1d
+ 
+
+
+spark-submit --master yarn --deploy-mode cluster --properties-file /root/zz/spark_sql_test/udfjars.conf --num-executors 1 --executor-cores 1 --executor-memory 2G --conf spark.executor.memoryOverhead=1g --class yieldCalculate.service.Test /root/test/sparksql-1.0-SNAPSHOT.jar
+
+#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --properties-file /root/zz/spark_sql_test/udfjars.conf --num-executors 1 --executor-cores 1 --executor-memory 2G --conf spark.executor.memoryOverhead=1g --class yieldCalculate.service.SparkSql /root/zz/spark_sql_test/qa_add_hcode/sparksql-1.0-SNAPSHOT.jar "SELECT t5.dev_template_unique_id template_id, t5.device_id device_id, t5.CurProgramNo program_no, t5.par_date start_time, t5.sum_FinishPartsNum yield, ifnull( t5.next_date, 'endTime' ) end_time, unix_timestamp(ifnull( t5.next_date, 'endTime' ))- unix_timestamp( t5.par_date ) duration_second, DATE_FORMAT( NOW(), 'yyyy-MM-dd HH' ) calculate_time, NOW() create_time, t5.org_code, t5.h_code FROM ( SELECT t4.dev_template_unique_id, t4.device_id, t4.CurProgramNo, t4.par_date, t4.sum_FinishPartsNum, t4.org_code, t4.h_code, lead( t4.par_date, 1 ) over ( PARTITION BY t4.dev_template_unique_id, t4.device_id ORDER BY t4.par_date ) next_date  FROM ( SELECT t3.dev_template_unique_id, t3.device_id, t3.CurProgramNo, t3.par_date, t3.org_code, t3.h_code, sum( calculate_FinishPartsNum ) sum_FinishPartsNum  FROM ( SELECT t2.dev_template_unique_id, t2.device_id, t2.data_col_time, t2.CurProgramNo, t2.calculate_FinishPartsNum, t2.org_code, t2.h_code, proNo_time ( t2.dev_template_unique_id, t2.device_id, t2.CurProgramNo, t2.data_col_time ) par_date, row_number() over ( PARTITION BY t2.dev_template_unique_id, t2.device_id ORDER BY t2.data_col_time ) rk  FROM ( SELECT t.dev_template_unique_id, t.device_id, t.data_col_time, t.CurProgramNo, t.client_id org_code, t.hierarchy_code h_code, CASE  WHEN ( t.FinishPartsNum - t.last_FinishPartsNum ) < - 100 THEN t.FinishPartsNum  WHEN ( t.FinishPartsNum - t.last_FinishPartsNum ) BETWEEN - 100  AND 0 THEN 0  WHEN ( t.FinishPartsNum - t.last_FinishPartsNum )> 0  AND ( t.FinishPartsNum - t.last_FinishPartsNum )< 100 THEN ( t.FinishPartsNum - t.last_FinishPartsNum ) ELSE 0  END calculate_FinishPartsNum  FROM ( SELECT t_dev_attrs.dev_template_unique_id, t_dev_attrs.device_id, t_dev_attrs.data_col_time, t_dev_attrs.FinishPartsNum, lag( FinishPartsNum, 1 ) over ( PARTITION BY t_dev_attrs.dev_template_unique_id, t_dev_attrs.device_id ORDER BY data_col_time ) last_FinishPartsNum, t_dev_attrs.CurProgramNo, t_dev_attrs.client_id, t_device.hierarchy_code  FROM t_device LEFT JOIN t_dev_attrs ON t_device.dev_template_unique_id = t_dev_attrs.dev_template_unique_id and t_device.device_id = t_dev_attrs.device_id WHERE t_dev_attrs.data_col_time >= 'startTime'  AND t_dev_attrs.data_col_time < 'endTime' AND t_dev_attrs.FinishPartsNum IS NOT NULL AND t_dev_attrs.FinishPartsNum >= 0  AND t_dev_attrs.CurProgramNo IS NOT NULL ) t  ) t2  ) t3  GROUP BY t3.dev_template_unique_id, t3.device_id, t3.CurProgramNo, t3.par_date, t3.org_code, t3.h_code ) t4  ) t5" "test05" "a3d36ac2d114466e8cd3bc75c3fa3c1d" ""
+
+
+spark-submit --master yarn --deploy-mode cluster --properties-file /root/zz/spark_sql_test/udfjars.conf --num-executors 1 --executor-cores 1 --executor-memory 2G --conf spark.executor.memoryOverhead=1g --class yieldCalculate.service.SparkSql /root/test/test_spark/sparksql-1.0-SNAPSHOT.jar "select t5.dev_template_unique_id template_id, t5.device_id device_id, t5.CurProgramNo program_no, t5.par_date start_time, t5.sum_FinishPartsNum yield, ifnull(t5.next_date, 'endTime') end_time, unix_timestamp(ifnull(t5.next_date, 'endTime')) - unix_timestamp(t5.par_date) duration_second, DATE_FORMAT(NOW(), 'yyyy-MM-dd HH') calculate_time from ( select t4.dev_template_unique_id, t4.device_id, t4.CurProgramNo, t4.par_date, t4.sum_FinishPartsNum, lead(t4.par_date, 1) over( partition by t4.dev_template_unique_id, t4.device_id order by t4.par_date ) next_date from ( select t3.dev_template_unique_id, t3.device_id, t3.CurProgramNo, t3.par_date, sum(calculate_FinishPartsNum) sum_FinishPartsNum from ( select t2.dev_template_unique_id, t2.device_id, t2.data_col_time, t2.CurProgramNo, t2.calculate_FinishPartsNum, proNo_time( t2.dev_template_unique_id, t2.device_id, t2.CurProgramNo, t2.data_col_time ) par_date, row_number() over( partition by t2.dev_template_unique_id, t2.device_id order by t2.data_col_time ) rk from ( select t.dev_template_unique_id, t.device_id, t.data_col_time, t.CurProgramNo,case when (t.FinishPartsNum - t.last_FinishPartsNum) < -100 then t.FinishPartsNum when (t.FinishPartsNum - t.last_FinishPartsNum) between -100 and 0 then 0 when (t.FinishPartsNum - t.last_FinishPartsNum) > 0 and (t.FinishPartsNum - t.last_FinishPartsNum) < 100 then (t.FinishPartsNum - t.last_FinishPartsNum) else 0 end calculate_FinishPartsNum from ( select t_dev_attrs.dev_template_unique_id, t_dev_attrs.device_id, data_col_time, FinishPartsNum, lag(FinishPartsNum, 1) over( partition by t_dev_attrs.dev_template_unique_id, t_dev_attrs.device_id order by data_col_time ) last_FinishPartsNum, CurProgramNo from t_device left join t_dev_attrs on t_device.dev_template_unique_id = t_dev_attrs.dev_template_unique_id where data_col_time >= 'startTime' and data_col_time < 'endTime' and FinishPartsNum is not null and FinishPartsNum >= 0 and CurProgramNo is not null ) t ) t2 ) t3 group by t3.dev_template_unique_id, t3.device_id, t3.CurProgramNo, t3.par_date ) t4 ) t5" "20210604sybcljs_a3d36ac2d114466e8cd3bc75c3fa3c1d" "a3d36ac2d114466e8cd3bc75c3fa3c1d" ""
+
+
+
+
+
+
+
+./bin/flink run -m yarn-cluster -yjm 1024 -ytm 1024 -ynm goodbabyexceptiontypestatistics_qa --class com.ziyun.flink.start.RunCalculate /root/flink_job/project/goodbaby/realtime/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+./bin/flink run -m yarn-cluster -yjm 1024 -ytm 1024 -ynm goodbabyexceptiontypestatistics_yield_qa --class com.ziyun.flink.start.RunYieldCalculate /root/flink_job/project/goodbaby/realtime/goodbaby_yield/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+aws
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/goodbaby/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm goodbabyexceptiontypestatistics --class com.ziyun.flink.start.RunCalculate /home/ubuntu/flink_job/project/goodbaby/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm goodbabyexceptiontypestatistics_yield --class com.ziyun.flink.start.RunYieldCalculate /home/ubuntu/flink_job/project/goodbaby/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+
+
+select data_col_time,__time,device_id,Status,
+Line6Type,Line6StartTime,Line6Signintime,Line6AbnormalType,
+Line5Type,Line5StartTime,Line5Signintime,Line5AbnormalType,
+Line4Type,Line4StartTime,Line4Signintime,Line4AbnormalType,
+Line3Type,Line3StartTime,Line3Signintime,Line3AbnormalType,
+Line2Type,Line2StartTime,Line2Signintime,Line2AbnormalType,
+Line1Type,Line1StartTime,Line1Signintime,Line1AbnormalType
+from t_dev_attrs
+where dev_template_unique_id = 'RgoWzY3W5RBnD2bsXHxP'
+and data_col_time>='2021-04-17 12:00:00'
+and data_col_time<='2021-04-17 15:59:59'
+and device_id = '21357'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name calculateNumberOfUsers --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /home/ubuntu/spark_job/project/finance_big_screen/ems-stat-better-1.0-jar-with-dependencies.jar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name financebigscreen --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/spark_history_offline.conf --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen  /root/spark_job/finance_big_screen/ems-stat-better-1.0.jar
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name financebigscreen --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /root/spark_job/finance_big_screen/ems-stat-better-1.0-jar-with-dependencies.jar
+
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name wrisbandInstallCountAndInComeMonth --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /root/spark_job/finance_big_screen/wrisbandInstallCountAndInComeMonth/ems-stat-better-1.0-jar-with-dependencies.jar
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name NumberofCustomers --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /root/spark_job/finance_big_screen/NumberofCustomers/ems-stat-better-1.0-jar-with-dependencies.jar
+
+#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name xiaowei_statistics --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /root/spark_job/finance_big_screen/xiaowei_statistics/ems-stat-better-1.0-jar-with-dependencies.jar
+
+
+
+
+
+
+
+
+
+
+
+wrisbandInstallCountAndInComeMonth
+手环安装量/收入(月)
+#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name saleroom --conf spark.executor.memoryOverhead=1g --class com.ziyun.ems.spark.start.rowdata.financebigscreen.FinanceBigScreen /root/spark_job/finance_big_screen/saleroom/ems-stat-better-1.0-jar-with-dependencies.jar
+
+
+"SELECT
+  b.paidan,
+  b.installNum,
+  b.dayMaxInstallNum,
+  b.dayMaxInstallCompanyNum,
+  b.distributionCity,
+  b.distributionIndustry,
+  b.time
+FROM
+  (
+    SELECT
+      concat(a.paidan, \"%\") as paidan,
+      concat(a.installNum, \"个\") as installNum,
+      concat(a.dayMaxInstallNum, \"个\") as dayMaxInstallNum,
+      concat(a.dayMaxInstallCompanyNum, \"家/日\") as dayMaxInstallCompanyNum,
+      concat(a.distributionCity, \"个\") as distributionCity,
+      concat(a.distributionIndustry, \"个\") as distributionIndustry,
+      a.time
+    FROM
+      (
+        SELECT
+          (
+            (
+              SELECT
+                count(1)
+              FROM
+                t_strategy_plan_big_screen_data
+              WHERE
+                is_install = 1
+            ) / (
+              SELECT
+                count(1)
+              FROM
+                t_strategy_plan_big_screen_data
+            )
+          ) * 100 AS paidan,
+          (
+            SELECT
+              count(1) AS num
+            FROM
+              t_strategy_plan_big_screen_data
+          ) AS installNum,
+          (
+            SELECT
+              COUNT(id) AS dayMaxInstallNum
+            FROM
+              t_strategy_plan_big_screen_data
+            WHERE
+              is_install = 1
+            GROUP BY
+              SUBSTRING(install_time, 1, 10)
+            ORDER BY
+              dayMaxInstallNum DESC
+            LIMIT
+              1
+          ) AS dayMaxInstallNum,
+          (
+            SELECT
+              COUNT(DISTINCT company_name) AS dayMaxInstallCompanyNum
+            FROM
+              t_strategy_plan_big_screen_data
+            WHERE
+              is_install = 1
+            GROUP BY
+              SUBSTRING(install_time, 1, 10)
+            ORDER BY
+              dayMaxInstallCompanyNum DESC
+            LIMIT
+              1
+          ) AS dayMaxInstallCompanyNum,
+          (
+            SELECT
+              COUNT(b.city_code)
+            FROM
+              (
+                SELECT
+                  city_code
+                FROM
+                  t_strategy_plan_big_screen_data
+                WHERE
+                  city_code > ""
+                GROUP BY
+                  city_code
+              ) b
+          ) AS distributionCity,
+          (
+            SELECT
+              COUNT(b.industry_code)
+            FROM
+              (
+                SELECT
+                  industry_code
+                FROM
+                  t_strategy_plan_big_screen_data
+                WHERE
+                  industry_code > ""
+                GROUP BY
+                  industry_code
+              ) b
+          ) AS distributionIndustry,
+          now() AS time
+      ) a
+  ) b" lh_finance_dictionary_test
+
+
+
+
+
+
+
+
+
+
+
+
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm goodbabyexceptiontypestatistics_qa --class com.ziyun.flink.start.RunCalculate /root/flink_job/project/goodbaby/realtime/goodbabyexceptiontypestatistics-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm liangxike_and_pulanmeika_realtime_jialiang_20210427 --class com.ziyun.flink.start.RunCalculate /home/ubuntu/flink_job/project/liang_xi_ke_realtimeCal/realtimecalculateyield-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm liangxike_realtime_jialiang /home/ubuntu/flink_job_12/liang_xi_ke_realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,FinishPartsNum,device_id,dev_template_unique_id) as yield from pip_executor_to_druid where FinishPartsNum >= 0 and dev_template_unique_id='0bIiXmje1o9vR7w25UQd' group by device_id,dev_template_unique_id" lh_machine_yield_history
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm liangxike_realtime_jialiang /home/ubuntu/flink_job_12/liang_xi_ke_realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,FinishPartsNum,device_id,dev_template_unique_id) as yield from pip_executor_to_druid where FinishPartsNum >= 0 and dev_template_unique_id='0bIiXmje1o9vR7w25UQd' group by device_id,dev_template_unique_id" machine_yield_history
+
+
+
+
+
+
+select *from machine_yield_history where machine_id in ('74','75','76','77','78',79)
+"select device_id,dev_template_unique_id,pro_num_cal(data_col_time,FinishPartsNum,device_id,dev_template_unique_id) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_pro_num_cal_test
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm liangxike_realtime_jialiang /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,FinishPartsNum,device_id,dev_template_unique_id) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" machine_yield_history
+
+
+
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/li_wei_ten_history_status_info_offline_fix/historyStatusOffline-1.0-SNAPSHOT.jar ./
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten_filter_20210331 --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/release/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/li_wei_ten_history_status_info_offline_fix/historyStatusOffline-1.0-SNAPSHOT.jar
+
+
+
+
+
+spark-submit --master yarn --deploy-mode cluster --properties-file /root/lylWork/lyl.conf --num-executors 1 --executor-cores 1 --executor-memory 2G --name yunxinglv --conf spark.executor.memoryOverhead=1g --class OperationRatioBasic /root/lylWork/yunxinglv/OperationRatio-1.0-SNAPSHOT.jar "SELECT dev_template_unique_id, device_id, DATE_FORMAT( NOW(), 'yyyy-MM-dd HH' ) calculate_time, cast( sum( oprateRatio ) AS DECIMAL ( 8, 2 )) AS oprateRatio, org_code, h_code  FROM ( SELECT a.dev_template_unique_id AS dev_template_unique_id, a.device_id AS device_id, ( CASE WHEN a.status_nbr = 1 THEN a.duration /( 864 * b.deviceNum ) ELSE '0.00' END ) oprateRatio, a.org_code AS org_code, a.h_code AS h_code  FROM ( ( SELECT dev_template_unique_id, device_id, status_nbr, sum( status_duration ) AS duration, org_code, h_code  FROM history_status_info  GROUP BY dev_template_unique_id, device_id, status_nbr, org_code, h_code  HAVING dev_template_unique_id IN ( SELECT dev_template_unique_id FROM t_device )) AS a JOIN ( SELECT COUNT( device_id ) AS deviceNum, dev_template_unique_id  FROM history_status_info  GROUP BY dev_template_unique_id  HAVING dev_template_unique_id IN ( SELECT dev_template_unique_id FROM t_device )) AS b ON a.dev_template_unique_id = b.dev_template_unique_id  )  )  GROUP BY dev_template_unique_id, device_id, org_code, h_code" "yunxinglv_test_table" "a3d36ac2d114466e8cd3bc75c3fa3c1d" "53ae240bfe2d4e2ebe54a0dd8c84a466"
+
+
+
+
+
+
+
+
+
+
+"select COUNT(start_time,end_time,device_id,dev_template_unique_id,status_nbr) a,device_id,dev_template_unique_id,start_time,end_time,status_nbr from IOT_COLLECT_ONE_HOUR_DATA where start_time>="" and end_time<=""  group by device_id,dev_template_unique_id,start_time,end_time,status_nbr HAVING a>1"
+########################################  2021-02-24  ############################################
+db.getCollection("li_wei_ten_history_status_info").find({device_id:'14014',start_time:{$gte:'2021-04-01 00:00:00'},end_time:{$lt:'2021-04-02 00:00:00'}})
+select device_id,dev_template_unique_id,start_time,end_time,status_nbr,count(*) from
+ li_wei_ten_history_status_info_test_20210317 
+ where start_time>='2021-03-18 00:00:00' and end_time<='2021-03-25 20:00:00' 
+  group by device_id,dev_template_unique_id,start_time,end_time,status_nbr having count(*) > 1 
+
+查询补断线缺少的
+select sum(status_duration),device_id
+from li_wei_ten_history_status_info
+where dev_template_unique_id = '4aCC274w5E75Z4069gYH'
+and start_time >= '2021-03-24 20:00:00'
+and end_time <= '2021-03-25 08:00:00'
+group by device_id
+having sum(status_duration) < 43200000
+
+select dev_template_unique_id,device_id,data_col_time,__time,create_date
+from t_dev_attrs
+where dev_template_unique_id = '4aCC274w5E75Z4069gYH'
+and device_id = '14018'
+and data_col_time = '2021-03-13 18:10:45'
+查重复数据
+select COUNT(data_col_time) a,data_col_time
+from t_dev_attrs
+where dev_template_unique_id = '4aCC274w5E75Z4069gYH'
+and device_id = '14018'
+group by data_col_time
+HAVING a>1
+
+下面这个SQL可以查出过期很长时间的数据
+select create_date,__time,data_col_time,CncStatus,device_id,PartCount,TotalLength,orderlength,OrderUnFinishCount,OrderFinishCount,OrderTotalCount,electric_current,Avgspeed
+from t_dev_attrs
+where dev_template_unique_id = '0l9r4Nm9ge2fbZYFjfYe'
+and device_id = '19733'
+AND __time <= '2021-02-20 18:00:00'
+AND __time >= '2021-02-20 08:00:00'
+
+select device_id,dev_template_unique_id,start_time,end_time,status_nbr,count(*) from history_status_info where start_time>='2021-03-15 00:00:00' and end_time<='2021-03-17 20:00:00'  group by device_id,dev_template_unique_id,start_time,end_time,status_nbr having count(*) > 1 
+
+db.getCollection("li_wei_ten_history_status_info").insert({ 
+    "dev_template_unique_id" : "4aCC274w5E75Z4069gYH", 
+    "device_id" : "18944", 
+    "end_time" : "2021-02-13 13:00:00", 
+    "status_duration" : NumberLong(3600000), 
+    "caculate_time" : "2021-02-13 15", 
+    "class_id" : NumberInt(2174), 
+    "class_name" : "默认班次", 
+    "create_date" : ISODate("2021-02-13T07:02:25.468+0000"), 
+    "create_time" : "2021-02-13 15:02:25", 
+    "finalCncStatus" : NumberInt(-99), 
+    "finalStatusColor" : "#777777", 
+    "finalStatusName" : "断线", 
+    "finish_parts_num" : NumberInt(0), 
+    "from_time" : "00:00", 
+    "group_id" : NumberInt(324), 
+    "group_name" : "XXX/谭监兵", 
+    "h_code" : "7ebc5d786faa48029628a5f63de68d3d", 
+    "h_name" : "立维腾电子（东莞）有限公司", 
+    "org_code" : "7ebc5d786faa48029628a5f63de68d3d", 
+    "real_to_time" : "00:00", 
+    "start_time" : "2021-02-13 12:00:00", 
+    "start_timestamp" : NumberLong(1613188800000), 
+    "status_nbr" : NumberInt(-99)
+}
+)
+
+
+
+./bin/flink run /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_5a8712194b7e4329a76e78bc2ccd8c15 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_pro_num_cal_test
+
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm liangxike_realtime /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" liangxikeshishijisuan_5f46ae60484549b89cc79fb05429b437
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 and device_id in ('20034','20032','20031') group by device_id,dev_template_unique_id" liangxikeshishijisuan_5f46ae60484549b89cc79fb05429b437
+
+
+
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_5a8712194b7e4329a76e78bc2ccd8c15 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id"  lh_pro_num_cal_test
+
+
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_5a8712194b7e4329a76e78bc2ccd8c15 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" shengchanjiepaiji_5f46ae60484549b89cc79fb05429b437
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm pulanmeika_realtime  /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_5a8712194b7e4329a76e78bc2ccd8c15 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" pulanmeikashishijisuan_5f46ae60484549b89cc79fb05429b437
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" jisuanchangliang_5f46ae60484549b89cc79fb05429b437
+
+
+
+2021-03-15 周报：帮硬件部导数据
+Tmore控制台提交sql,数管平台看卡片
+
+"select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_bb20c48fd643480cab12cdebc2fc84b8 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" jisuanchangliang_5f46ae60484549b89cc79fb05429b437
+
+"select dev_template_unique_id,device_id,alarm_cal(data_col_time,Alarms) as aaaa from cc_dd group by dev_template_unique_id,device_id" lh_alarm_test
+./bin/flink run -m yarn-cluster /root/flink_job/basic-table/jar/alarm/flink-connector-mongodb-1.0.jar "select dev_template_unique_id,device_id,alarm_cal(data_col_time,Alarms) as aaaa from cc_dd group by dev_template_unique_id,device_id" lh_alarm_test_20210316
+
+"select device_id,dev_template_unique_id,alarm_cal(data_col_time,Alarms) as aaaa from kafka_device group by device_id,dev_template_unique_id" lh_alarm_test
+select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from kafka_device where FinishPartsNum >= 0 group by device_id,dev_template_unique_id
+
+"select dev_template_unique_id,device_id,history_status_info_cal(data_col_time,CncStatus,client_id,finalCncStatus,finalStatusColor,finalStatusName) as aaaa from cc_dd group by dev_template_unique_id,device_id" lh_history_status_info_test
+flink run /root/flink_job/basic-table/jar/history_status_info/flink-connector-mongodb-1.0.jar "select dev_template_unique_id,device_id,history_status_info_cal(data_col_time,CncStatus,client_id,finalCncStatus,finalStatusColor,finalStatusName) as aaaa from cc_dd group by dev_template_unique_id,device_id" lh_history_status_info_test_test_20210316
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from pip_executor_to_druid where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_realtimecal_test_udf
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from pip_executor_to_druid where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_realtimecal_test_udf
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,alarm_cal(data_col_time,Alarms) as alarm from pip_executor_to_druid where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_realtimecal_test_udf
+
+
+
+QA kafka root/Pass1234
+/root/kafka_2.12-2.3.0
+
+export HADOOP_CLASSPATH=`hadoop classpath`
+
+./bin/flink run -m yarn-cluster /data/custom_calculate_formula/real_time/mainJar/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" lh_realtimecal_test_no_print_anle_20200224
+
+./bin/flink run -m yarn-cluster /home/ziyun/test/new_job_test/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_8c00945c0cf348ef8fedd605ee11fee7 where FinishPartsNum >= 0" sspsj_6225b27e90224bd69f9222158fa80677
+./bin/flink run -m yarn-cluster /home/ziyun/test/new_job_test/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_5f46ae60484549b89cc79fb05429b437  where FinishPartsNum >= 0" Real_time_calculation_formula_5f46ae60484549b89cc79fb05429b437
+./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm sscreate_time /home/ziyun/test/new_job_test/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d  where FinishPartsNum >= 0" sscreate_time_a3d36ac2d114466e8cd3bc75c3fa3c1d
+
+./bin/flink run -m yarn-cluster /home/ziyun/test/new_job_test/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,data_col_time from realtime_computation_53ae240bfe2d4e2ebe54a0dd8c84a466" fuyong_realtime1_a3d36ac2d114466e8cd3bc75c3fa3c1d
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh_new/flink_his_status-1.0-SNAPSHOT.jar ./
+
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm history_status_info_20200222_test /home/ubuntu/flink_job/project/history_status_20200222/flink_his_status-1.0-SNAPSHOT.jar
+
+yarn logs -applicationId
+yarn application -kill
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" lh_realtimecal_test_no_print_anle
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_5f46ae60484549b89cc79fb05429b437 where FinishPartsNum >= 0" yuyanshishijisuan_5f46ae60484549b89cc79fb05429b437
+
+
+//列的别名
+"select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0"
+
+//cast函数
+"select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,CAST(FinishPartsNum AS INT) FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0"
+
+
+//子查询
+这样写有问题 "select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,CAST(FinishPartsNum AS INT) FinishPartsNum from ( select xxx,yyy,zzz from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d ) AS t1 where FinishPartsNum>=0 "
+"select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,CAST(FinishPartsNum AS INT) FinishPartsNum from ( select xxx,yyy,zzz from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where xxx >= 0) AS t1 where FinishPartsNum>=0 "
+
+//JOIN
+"select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,CAST(FinishPartsNum AS INT) FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d t1 JOIN t2 ON t1.deviceId = t2.deviceID where FinishPartsNum >= 0"
+
+./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id AS deviceID,dev_template_unique_id AS devTemplateUniqueId,CurProgramNo,data_col_time AS dataColTime,CAST(FinishPartsNum AS STRING) AS FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" lh_realtimecal_test_no_print_anle_02
+
+
+QA 在 ziyunbd04 的/data/software/flink/flink-1.8.0 运行这个qa的job
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm history_status_info_20200224_test_qa /root/flink_job/project/new_history_status/flink_his_status-1.0-SNAPSHOT.jar
+
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm history_status_info_li_wei_ten_qa /root/flink_job/project/li_wei_ten_history_status_info/flink_his_status-1.0-SNAPSHOT.jar
+
+## jar包配置大hdfs上 通过--properties-file 配置加载jar
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten_qa --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/release/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/new_project/release/historyStatusOffline-1.0-SNAPSHOT.jar
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten_qa --conf spark.executor.memoryOverhead=1g --class com.ziyun.spark.RunCalculate /root/spark_job/li_wei_ten_history_status_offline/historyStatusOffline-1.0-SNAPSHOT.jar
+//QA所使用的表
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm history_status_info /root/flink_job/project/new_history_status/release/flink_his_status-1.0-SNAPSHOT.jar
+
+
+//往kafka里写入数据命令
+bin/kafka-console-producer.sh --broker-list 192.168.0.175:9092 --topic pip_executor_to_druid
+
+
+db.getCollection("history_status_info").find({caculate_time :{$gt:'2021-02-10 14',$lte:'2021-02-11 15'}})
+
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_20200225_lh/ems-stat-better-1.0.jar ./
+
+
+/bin/spark-submit --master yarn --deploy-mode cluster --num-executors 2 --executor-cores 1 --executor-memory 2G --name mongo_tomongo_test --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/spark_history_offline.conf --class com.ziyun.ems.spark.start.rowdata.Test11 /home/ubuntu/spark_job/project/test_export_data_20210327_lh/ems-stat-better-1.0.jar
+
+
+
+
+
+"select device_id, dev_template_unique_id, CurProgramNo, data_col_time, FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" test_realtime_domain_a3d36ac2d114466e8cd3bc75c3fa3c1d
+
+
+"select device_id,dev_template_unique_id,pro_num_cal(data_col_time,CurProgramNo,FinishPartsNum) as yield from realtime_computation_5a8712194b7e4329a76e78bc2ccd8c15 where FinishPartsNum >= 0 group by device_id,dev_template_unique_id" lh_pro_num_cal_test
+
+
+
+
+
+
+
+
+
+
+
+
+立维腾bug修复
+yarn application -kill application_1581491039849_83534
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/test/li_wei_ten_20210402/flink_his_status-1.0-SNAPSHOT.jar
+./bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_li_wei_ten /home/ubuntu/flink_job/project/history_status_20200222/flink_his_status-1.0-SNAPSHOT.jar
+
+
+
+
+
+yarn application -kill application_1581491039849_97311
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh_new/flink_his_status-1.0-SNAPSHOT.jar ./
+./bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_li_wei_ten_20210317_test /home/ubuntu/flink_job/project/history_status_20210317_test/flink_his_status-1.0-SNAPSHOT.jar
+./bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_li_wei_ten_20210317_test_filter /home/ubuntu/flink_job/project/history_status_20210317_test/filter/flink_his_status-1.0-SNAPSHOT.jar
+
+
+########################################  2021-01-20  ############################################
+export HADOOP_CLASSPATH=`hadoop classpath`
+
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/ems-stat-better-1.0.jar ./
+./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name hong_fang_total_part_count_test --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/spark_hf.conf --class com.ziyun.ems.spark.start.rowdata.RowDataOnYieldUPHRejectCalculate /home/ubuntu/spark_job/project/new_project/ems-stat-better-1.0.jar
+
+//上线脚本
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name hong_fang_total_part_count_test --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/release/spark_hf.conf --class com.ziyun.ems.spark.start.rowdata.RowDataOnYieldUPHRejectCalculate /home/ubuntu/spark_job/project/new_project/release/ems-stat-better-1.0.jar
+
+
+
+
+kafka-run-class.sh kafka.tools.ConsumerOffsetChecker --group test_lh_123  --topic realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d   --zookeeper *:2181,*:2181,*:2181/kafka
+
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/operation_rate-1.0-SNAPSHOT.jar ./
+
+./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name OperationRateCal_Test --conf spark.executor.memoryOverhead=1g  --class com.ziyun.operationrate.start.OperationRateCal /home/ubuntu/spark_job/project/new_project/operation_rate-1.0-SNAPSHOT.jar
+
+
+yarn logs -applicationId application_1581491039849_85175		
+yarn application -kill 
+
+
+	0 10 * * * ? *
+	#!/bin/bash
+	#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/history_status_dsp/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/history_status_dsp/historyStatusOffline-1.0-SNAPSHOT.jar
+
+#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/release/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/new_project/release/historyStatusOffline-1.0-SNAPSHOT.jar
+#!/bin/bash
+spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/history_status_dsp/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/history_status_dsp/historyStatusOffline-1.0-SNAPSHOT.jar
+select device_id,data_col_time,CncStatus,__time
+from t_dev_attrs
+where device_id = '14035'
+and dev_template_unique_id = '4aCC274w5E75Z4069gYH' and data_col_time>='2021-01-15 14:51:21' and data_col_time<'2021-01-15 12:00:00' and __time>'2021-01-15 10:47:00' ORDER by __time desc
+
+
+select device_id,data_col_time,CncStatus,__time,receive_date,transformed_date
+from t_dev_attrs
+where device_id = '14037'
+and dev_template_unique_id = '4aCC274w5E75Z4069gYH' and data_col_time>='2021-01-15 19:10:27'
+
+########################################  2020-12-30  ############################################
+生产kafka
+10.20.10.107 kafka01
+10.20.11.50  kafka02
+10.20.10.247 kafka03
+aws@ziyun@123
+ec2-user
+ssh登录这些节点
+netstat -anp|grep 8118
+ ps -ef|grep kafka
+查看磁盘空间
+df -Th
+查看文件大小
+du -sh 111.log
+显示文本号
+:set nu
+bin/kafka-console-consumer.sh --bootstrap-server 10.20.10.107:9092,10.20.11.50:9092,10.20.10.247:9092 --topic pip_executor_to_druid --property auto.offset.reset=latest --property group.id=test_1 >> test/111.log
+bin/kafka-console-consumer.sh --bootstrap-server 192.168.0.175:9092 --topic pip_executor_to_druid --property auto.offset.reset=earliest --property group.id=test_1 >> /root/kafka_2.12-2.3.0/test/111.log
+
+8095 2020-12-30 16:33:25
+########################################  2020-12-30 之前############################################
+172.16.3.162
+ssh ubuntu@ziyunbd08
+ssh 10.20.10.107
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/history_status_offline_distinct-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/release/history_status_offline_distinct-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name history_status_offline_distinct --conf spark.executor.memoryOverhead=1g  --class com.ziyun.spark.start.RunMongoToMongo /home/ubuntu/spark_job/project/history_status_info_offline_distinct/history_status_offline_distinct-1.0-SNAPSHOT-jar-with-dependencies.jar
+./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name history_status_offline_distinct --conf spark.executor.memoryOverhead=1g  --class com.ziyun.spark.start.RunMongoToMongo /home/ubuntu/spark_job/project/history_status_info_offline_distinct/release/history_status_offline_distinct-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+scp -i /home/ec2-user/public_dir/test_lh/history_status_offline_distinct-1.0-SNAPSHOT.jar ./
+
+scp -i /home/ubuntu/spark_job/project/history_status_info_offline_distinct/flinkkafkatohistorystatuscal-1.0-SNAPSHOT-jar-with-dependencies.jar ./
+
+ bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_15min /home/ubuntu/flink_job/project/new_history_status/flinkkafkatohistorystatuscal-1.0-SNAPSHOT-jar-with-dependencies.jar
+ 
+ bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_15min_140 /home/ubuntu/flink_job/project/new_history_status/flinkkafkatohistorystatuscal-1.0-SNAPSHOT-jar-with-dependencies.jar
+ 
+ bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm realtimeCal_test /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from kafka_device where FinishPartsNum >= 0"
+ 
+ 
+ ./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from kafka_device where FinishPartsNum >= 0" shishijisuanwudongwudong_a3d36ac2d114466e8cd3bc75c3fa3c1d
+ ./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_53ae240bfe2d4e2ebe54a0dd8c84a466 where FinishPartsNum >= 0" ws_ceshi_data_5f46ae60484549b89cc79fb05429b437    lh_realtimecal_test_no_print
+ 
+ ./bin/flink run -m yarn-cluster /home/ziyun/test/new_job_test/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum,create_date from realtime_computation_2a3a8bbcc95047348fa48706097825a9 where FinishPartsNum >= 0" newTomrenewTomre_5f46ae60484549b89cc79fb05429b437
+ 
+ 
+ select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum,create_date from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0
+ 
+ ./bin/flink run -m yarn-cluster /root/flink_job/project/realtimeCal/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" lh_realtimecal_test_no_print_anle
+ 
+ ./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm newtest /root/flink_job/project/realtimeCal/realtime_udf/realtimeCal-1.0-SNAPSHOT-jar-with-dependencies.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_a3d36ac2d114466e8cd3bc75c3fa3c1d where FinishPartsNum >= 0" newtest_5f46ae60484549b89cc79fb05429b437
+ 
+ ./bin/flink run -m yarn-cluster -yjm 2048 -ytm 2048 -ynm ssjstest /home/ubuntu/flink_job_12/t_more/realtimeCal-1.0-SNAPSHOT.jar "select device_id,dev_template_unique_id,CurProgramNo,data_col_time,FinishPartsNum from realtime_computation_5f46ae60484549b89cc79fb05429b437 where FinishPartsNum >= 0" ssjstest_5f46ae60484549b89cc79fb05429b437
+ 
+ yarn application -kill  application_1611423556124_0925
+flink run -m yarn-cluster -ys 8 -ynm myapp -yn 4 -yjm 1024 -ytm 4096 -d -c com.paultech.MyApp ./myapp.jar
+yarn application -kill application_1581491039849_77653
+flink run -m yarn-cluster -ys 8 -ynm FlinkHistoryStatusCal_15min -yn 4 -yjm 1024 -ytm 1024 -d  ./myapp.jar
+
+
+12、16、18、23、24、25、26、28、30、31、33、34、35、36、37
+
+
+scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/flink_his_status-1.0-SNAPSHOT.jar ./
+bin/flink run -m yarn-cluster -yn 2 -yjm 2048 -ytm 2048 -ynm FlinkHistoryStatusCal_li_wei_ten /home/ubuntu/flink_job/project/new_history_status/flink_his_status-1.0-SNAPSHOT.jar
+
+ scp -i /home/ubuntu/spark_job/project/history_status_dsp/spark_history_offline.conf ./
+ scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/historyStatusOffline-1.0-SNAPSHOT.jar ./
+ 
+ scp -i /home/ubuntu/ZiYun-JumpServer.pem ec2-user@jumpserver:/home/ec2-user/public_dir/test_lh/release/historyStatusOffline-1.0-SNAPSHOT.jar ./
+ ./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_46 --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/new_project/historyStatusOffline-1.0-SNAPSHOT.jar
+ 
+ 
+ 上线命令
+ ./bin/spark-submit --master yarn --deploy-mode cluster --num-executors 3 --executor-cores 1 --executor-memory 2G --name historyStatusOffline_li_wei_ten --conf spark.executor.memoryOverhead=1g --properties-file /home/ubuntu/spark_job/project/new_project/release/spark_history_offline.conf --class com.ziyun.spark.RunCalculate /home/ubuntu/spark_job/project/new_project/release/historyStatusOffline-1.0-SNAPSHOT.jar
+
+ ./bin/spark-submit --class com.ziyun.spark.RunCalculate \
+--master yarn \
+--deploy-mode cluster \
+--driver-memory 1g \
+--executor-memory 1g \
+--executor-cores 1 \
+--queue thequeue \
+--name historyStatusOffline_46 \
+/home/ubuntu/spark_job/project/new_project/historyStatusOffline-1.0-SNAPSHOT.jar 10
+
+yarn application -kill application_1581491039849_83508
+
+
+yarn application -kill application_1581491039849_83354
+
+yarn application -kill application_1581491039849_82936
+yarn application -kill application_1581491039849_82921
+
+
+yarn logs -applicationId application_1581491039849_82905
+
+yarn application -kill application_1581491039849_82905
+yarn application -kill application_1581491039849_82891
+
+
+yarn logs -applicationId application_1581491039849_82891
+
+yarn application -kill application_1581491039849_82891
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+yarn application -kill application_1581491039849_82878
+
+yarn application -kill application_1581491039849_82866
+
+yarn application -kill application_1581491039849_82866
+
+yarn logs -applicationId application_1581491039849_82859
+yarn application -kill application_1581491039849_82859
+
+
+
+
+
+yarn application -kill application_1581491039849_82731
+
+yarn logs -applicationId application_1581491039849_82729
+yarn application -kill application_1581491039849_82729
+
+
+
+yarn logs -applicationId application_1581491039849_82727
+
+yarn application -kill application_1581491039849_82719
+
+yarn logs -applicationId application_1581491039849_82722
+
+yarn logs -applicationId application_1581491039849_82719
+
+
+
+yarn application -kill application_1581491039849_82697
+
+
+
+
+
+
+
+
+
+yarn application -kill application_1581491039849_82692
+
+yarn application -kill application_1581491039849_82681
+
+yarn application -kill application_1581491039849_82679
+
+yarn application -kill application_1581491039849_82670
+
+
+
+yarn application -kill application_1581491039849_82663
+
+yarn application -kill application_1581491039849_82258
+
+yarn application -kill application_1581491039849_82656
+
+yarn application -kill application_1581491039849_82647
+
+yarn application -kill application_1581491039849_82633
+yarn application -kill application_1581491039849_82625
+
+yarn application -kill application_1581491039849_82488	
+
+yarn application -kill application_1581491039849_82482
+
+
+yarn application -kill application_1581491039849_82479
+
+select dev_template_unique_id,device_id, CncStatus, data_col_time, create_date from t_dev_attrs  where dev_template_unique_id = '4aCC274w5E75Z4069gYH' and data_col_time > '2021-01-13 16:50:00' and device_id = '14035'
+yarn logs -applicationId application_1581491039849_82461
+yarn application -kill  application_1581491039849_82461
+
+yarn logs -applicationId application_1581491039849_82452	
+yarn application -kill application_1581491039849_82452	
+
+
+yarn logs -applicationId application_1581491039849_82449
+yarn application -kill application_1581491039849_82449
+
+
+yarn logs -applicationId application_1581491039849_82444
+yarn application -kill application_1581491039849_82444
+
+yarn logs -applicationId application_1581491039849_82436
+
+yarn application -kill application_1581491039849_82436
+
+yarn logs -applicationId application_1581491039849_82433	
+yarn application -kill application_1581491039849_82433
+
+
+
+
+
+
+
+
+
+
+yarn logs -applicationId application_1581491039849_82431
+yarn application -kill application_1581491039849_82431
+
+
+yarn logs -applicationId application_1581491039849_82414	
+yarn application -kill application_1581491039849_82414	
+14029  正常
+16066  断线
+16054  断线
+
+14033
+14035
+14032
+14031
+14028
+14027
+14024
+14022
+14021
+14020
+14019
+
+
+yarn logs -applicationId application_1581491039849_81168
+
+
+yarn logs -applicationId  application_1581491039849_80927
+yarn application -kill application_1581491039849_80927
+
+yarn logs -applicationId application_1581491039849_80708
+yarn application -kill application_1581491039849_80708
+
+
+
+
+yarn logs -applicationId application_1581491039849_80551
+yarn application -kill application_1581491039849_80551
+
+yarn logs -applicationId application_1581491039849_80550
+yarn application -kill application_1581491039849_80550
+yarn logs -applicationId application_1581491039849_80547
+yarn application -kill application_1581491039849_80547 
+
+
+ yarn logs -applicationId application_1581491039849_80542
+yarn application -kill application_1581491039849_80542
+ yarn logs -applicationId application_1581491039849_80540
+yarn application -kill application_1581491039849_80540
+
+
+
+
+
+
+
+yarn logs -applicationId application_1581491039849_80523
+yarn application -kill  application_1581491039849_80523
+
+yarn application -kill application_1581491039849_80513
+
+yarn logs -applicationId application_1581491039849_80500
+yarn application -kill application_1581491039849_80500
+
+yarn application -kill application_1581491039849_78394
+
+yarn logs -applicationId application_1581491039849_79696
+yarn application -kill application_1581491039849_79696
+
+yarn logs -applicationId application_1581491039849_79694
+yarn application -kill application_1581491039849_79694
+
+yarn logs -applicationId application_1581491039849_79688
+yarn application -kill application_1581491039849_79688
+
+yarn logs -applicationId application_1581491039849_79685
+yarn application -kill application_1581491039849_79685
+
+
+yarn logs -applicationId application_1581491039849_79683
+yarn application -kill application_1581491039849_79683	
+
+yarn logs -applicationId application_1581491039849_79681
+yarn application -kill application_1581491039849_79681
+
+yarn logs -applicationId application_1581491039849_79675
+yarn application -kill application_1581491039849_79675
+
+yarn logs -applicationId application_1581491039849_79670
+yarn application -kill application_1581491039849_79670
+
+yarn logs -applicationId application_1581491039849_79664
+yarn application -kill application_1581491039849_79664
+
+yarn logs -applicationId application_1581491039849_79652
+yarn application -kill application_1581491039849_79652
+
+
+yarn logs -applicationId application_1581491039849_79646
+yarn application -kill application_1581491039849_79646
+
+yarn logs -applicationId application_1581491039849_79244
+yarn application -kill application_1581491039849_79244
+yarn application -kill application_1581491039849_79251
+
+yarn logs -applicationId application_1581491039849_78394
+
+yarn logs -applicationId application_1581491039849_78381
+yarn application -kill application_1581491039849_78381
+
+yarn logs -applicationId application_1581491039849_78373
+yarn application -kill application_1581491039849_78373
+
+yarn logs -applicationId  application_1581491039849_78371
+yarn application -kill  application_1581491039849_78371
+
+yarn logs -applicationId application_1581491039849_78363
+yarn application -kill application_1581491039849_78363
+
+yarn logs -applicationId application_1581491039849_77666
+yarn logs -applicationId application_1581491039849_77683
+yarn logs -applicationId application_1581491039849_77691
+
+
+yarn logs -applicationId application_1581491039849_77917
+yarn application -kill application_1581491039849_77917
+
+yarn logs -applicationId application_1581491039849_77922
+yarn application -kill application_1581491039849_77922
+
+yarn logs -applicationId application_1581491039849_77927
+yarn application -kill application_1581491039849_77927
+
+yarn logs -applicationId application_1581491039849_77935
+yarn application -kill application_1581491039849_77935
+
+yarn logs -applicationId application_1581491039849_77942
+yarn application -kill application_1581491039849_77942
+
+yarn logs -applicationId application_1581491039849_77944	
+yarn application -kill application_1581491039849_77944
+
+yarn logs -applicationId application_1581491039849_77951
+yarn application -kill application_1581491039849_77951
+
+yarn logs -applicationId application_1581491039849_78104
+yarn application -kill application_1581491039849_78104
+
+yarn logs -applicationId application_1581491039849_78107
+yarn application -kill application_1581491039849_78107
+
+yarn logs -applicationId application_1581491039849_78111
+yarn application -kill application_1581491039849_78111
+
+yarn logs -applicationId application_1581491039849_78113	
+yarn application -kill application_1581491039849_78113
+
+yarn logs -applicationId application_1581491039849_78114
+yarn application -kill application_1581491039849_78114
+
+yarn application -kill application_1581491039849_78120
+
+yarn application -kill application_1581491039849_78123
+
+yarn logs -applicationId application_1581491039849_78135	
+yarn application -kill application_1581491039849_78135
+
+yarn logs -applicationId application_1581491039849_78140	
+yarn application -kill application_1581491039849_78140
+
+yarn logs -applicationId application_1581491039849_78141
+yarn application -kill application_1581491039849_78141
+
+yarn logs -applicationId application_1581491039849_78149	
+yarn application -kill application_1581491039849_78149
+
+yarn application -kill application_1581491039849_78153
+
+yarn logs -applicationId application_1581491039849_78157	
+yarn application -kill application_1581491039849_78157
+
+yarn logs -applicationId application_1581491039849_78164
+yarn application -kill application_1581491039849_78164
+
+yarn logs -applicationId  application_1581491039849_78168
+yarn application -kill  application_1581491039849_78168
+
+yarn logs -applicationId application_1581491039849_78175
+yarn application -kill application_1581491039849_78175
+
+
+yarn logs -applicationId application_1581491039849_78181
+yarn application -kill application_1581491039849_78181
+
+yarn logs -applicationId  application_1581491039849_78352
+yarn application -kill  application_1581491039849_78352
+
+yarn application -kill application_1581491039849_78357
+10.20.10.107 kafka01
+10.20.11.50  kafka02
+10.20.10.247 kafka03
+
+
+
+kafka01:9092,kafka02:9092,kafka03:9092
+
+
+
+tunnel 后的kafka端口信息：
+
+127.0.0.1:9999,127.0.0.1:9998,127.0.0.1:9997
+
+
+
+161.189.16.11  跳板机
+
+
+"MachineID": "SBUA006",
+  "D1": 0,
+  "D2": 10649,
+  "D3": 0,
+  "D4": "2020-11-17 06:56:54",
+  "D5": "1605596214405",
+  "D6": 0,
+  "D7": 0,
+  "D8": 12,
+  "D9": 0,
+  "D10": 0,
+  "D11": 0,
+  "D12": 18,
+  "D13": 305,
+  "D14": 315,
+  "D15": 310,
+  "D16": 305,
+  "D17": 300,
+  "D18": 0,
+  "D19": 0,
+  "D20": 0,
+  "D21": 30,
+  "D22": 50,
+  "D23": 25,
+  "D24": 20,
+  "D25": 35,
+  "D26": 18,
+  "D27": 0,
+  "D28": 0,
+  "D29": 18,
+  "D30": 0,
+  "D31": 0,
+  "D32": 18,
+  "D33": 0,
+  "D34": 0,
+  "D35": 0,
+  "D36": 0,
+  "D37": 0,
+  "D38": 0,
+  "D39": 0,
+  "D40": 0,
+  "D41": 0,
+  "D42": 25,
+  "D43": 17,
+  "D44": 4,
+  "D45": 20,
+  "D46": 16,
+  "D47": 4,
+  "D48": 0,
+  "D49": 0,
+  "D50": 0,
+  "D51": 0,
+  "D52": 0,
+  "D53": 0,
+  "D54": 0,
+  "D55": 0,
+  "D56": 0,
+  "D57": 0,
+  "D58": 0,
+  "D59": 0,
+  "D60": 0,
+  "D61": 0,
+  "D62": 0,
+  "D63": 60,
+  "D64": 70,
+  "D65": 20,
+  "D66": 50,
+  "D67": 70,
+  "D68": 30,
+  "D69": 0,
+  "D70": 0,
+  "D71": 0,
+  "D72": 0,
+  "D73": 0,
+  "D74": 0,
+  "D75": 0,
+  "D76": 0,
+  "D77": 0,
+  "D78": 0,
+  "D79": 0,
+  "D80": 0,
+  "D81": 0,
+  "D82": 0,
+  "D83": 0

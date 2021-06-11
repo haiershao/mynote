@@ -8,6 +8,13 @@
 
 4.学习资源网站 https://www.zhihu.com/column/c_1252698235820523520
 
+```
+1  git clone --branch <branchname> <remote-repo-url>
+ git clone --branch zw  http://192.168.0.172/bigdata/product_tool/metadataziyun.git
+```
+
+
+
 # demo
 
 1.写个定时任务（shell,crontab）
